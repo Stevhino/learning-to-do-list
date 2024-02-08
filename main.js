@@ -1,21 +1,51 @@
 import "./style.css";
 
-document.querySelector("#app").innerHTML = `
-  <div>
-    <a href="https://vitejs.dev" target="_blank">
-      <img src="${viteLogo}" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank">
-      <img src="${javascriptLogo}" class="logo vanilla" alt="JavaScript logo" />
-    </a>
-    <h1>Hello Vite!</h1>
-    <div class="card">
-      <button id="counter" type="button"></button>
-    </div>
-    <p class="read-the-docs">
-      Click on the Vite logo to learn more
-    </p>
-  </div>
-`;
+const listsContainer = document.querySelector("[data-lists]");
+const newListForm = document.querySelector("[data-new-list-form]");
+const newListInput = document.querySelector("[data-new-list-input]");
 
-setupCounter(document.querySelector("#counter"));
+const LOCAL_STORAGE_LIST_KEY = "tasks.lists";
+let lists = JSON.parse(localStorage.getItem(LOCAL_STORAGE_LIST_KEY)) || [];
+
+newListForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const listName = newListInput.value;
+  if (listName == null || listName === "") return;
+  const list = createList(listName);
+  newListInput.value = null;
+  lists.push(list);
+  saveAndRender();
+});
+
+function createList(name) {
+  return { id: Date.now().toString(), name: name, tasks: [] };
+}
+
+function saveAndRender() {
+  save();
+  render();
+}
+
+function save() {
+  localStorage.setItem(LOCAL_STORAGE_LIST_KEY, JSON.stringify(lists));
+}
+
+function render() {
+  // <li class="list-name">Work</li>;
+  clearElement(listsContainer);
+  lists.forEach((list) => {
+    const listElement = document.createElement("li");
+    listElement.dataset.listId = list.id;
+    listElement.classList.add("list-name");
+    listElement.innerText = list.name;
+    listsContainer.appendChild(listElement);
+  });
+}
+
+function clearElement(element) {
+  while (element.firstChild) {
+    element.removeChild(element.firstChild);
+  }
+}
+
+render();
